@@ -44,7 +44,7 @@ code_url =  st.text_input('Code URL', value='')
 data_set =  st.text_input('Data Set', value='')
 
 if st.button("POST spark submit"):
-    post_spark_job(github_user, github_repo, spark_job, github_token)
+    post_spark_job(github_user, github_repo, spark_job, github_token, code_url, data_set)
 
 
 def get_spark_results(url_results):
