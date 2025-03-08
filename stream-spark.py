@@ -3,12 +3,17 @@ import requests
 import pandas  as pd
 # import json
 
-def post_spark_job(user, repo, job, token):
+def post_spark_job(user, repo, job, token, codeurl, dataseturl):
     # Define the API endpoint
     url = 'https://api.github.com/repos/' + user + '/' + repo + '/dispatches'
     # Define the data to be sent in the POST request
     payload = {
-      "event_type": job
+      "event_type": job,
+      "client_payload": {
+        "codeurl": codeurl,
+        "dataseturl": dataseturl
+      }
+
     }
 
     headers = {
@@ -35,6 +40,8 @@ github_user  =  st.text_input('Github user', value='username')
 github_repo  =  st.text_input('Github repo', value='repo')
 spark_job    =  st.text_input('Spark job', value='spark')
 github_token =  st.text_input('Github token', value='***')
+code_url =  st.text_input('Code URL', value='')
+data_set =  st.text_input('Data Set', value='')
 
 if st.button("POST spark submit"):
     post_spark_job(github_user, github_repo, spark_job, github_token)
