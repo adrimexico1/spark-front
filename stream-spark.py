@@ -49,7 +49,7 @@ def get_spark_results(url_results):
 
 st.header("spark-submit results")
 
-url_results=  st.text_input('URL results', value='https://raw.githubusercontent.com/***/***/refs/heads/main/results/***.json')
+url_results=  st.text_input('URL results', value='https://raw.githubusercontent.com/adrimexico1/spark-labs/refs/heads/main/results/data.json')
 
 if st.button("GET spark results"):
     get_spark_results(url_results)
