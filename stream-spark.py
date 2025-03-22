@@ -90,9 +90,12 @@ if st.button("GET spark results"):
 if st.button("Query mongodb collection"):
     items = get_data()
 
-    # Print results.
     for item in items:
-        st.write(f"{item['name']} : {item['birth']}:")
+        # Convertir la cadena JSON en un diccionario
+        item_data = json.loads(item["data"])
+        
+        # Mostrar en Streamlit
+        st.write(f"{item_data['name']} : {item_data['birth']}")
 
 if st.button("Query Postgresql table"):
     # Perform query.
