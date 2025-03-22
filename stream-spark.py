@@ -3,12 +3,17 @@ import requests
 import pandas  as pd
 import json
 import pymongo
-# Initialize connection. Uses st.cache_resource to only run once.
+
+# Initialize connection.
+# Uses st.cache_resource to only run once.
 @st.cache_resource
 def init_connection():
     return pymongo.MongoClient(**st.secrets["mongo"])
+
 client = init_connection()
-# Pull data from the collection. Uses st.cache_data to only rerun when the query changes or after 10 min.
+
+# Pull data from the collection.
+# Uses st.cache_data to only rerun when the query changes or after 10 min.
 @st.cache_data(ttl=600)
 def get_data():
     db = client.people
@@ -17,17 +22,15 @@ def get_data():
     return items
 
 
-def post_spark_job(user, repo, job, token, codeurl, dataseturl):
+# Initialize connection.
+conn = st.connection("postgresql", type="sql")
+
+def post_spark_job(user, repo, job, token):
     # Define the API endpoint
     url = 'https://api.github.com/repos/' + user + '/' + repo + '/dispatches'
     # Define the data to be sent in the POST request
     payload = {
-      "event_type": job,
-      "client_payload": {
-        "codeurl": codeurl,
-        "dataseturl": dataseturl
-      }
-
+      "event_type": job
     }
 
     headers = {
@@ -46,47 +49,50 @@ def post_spark_job(user, repo, job, token, codeurl, dataseturl):
     # Display the response in the app
     st.write(response)
 
-st.title("Spark & streamlit")
-
-st.header("spark-submit Job")
-
-github_user  =  st.text_input('Github user', value='username')
-github_repo  =  st.text_input('Github repo', value='repo')
-spark_job    =  st.text_input('Spark job', value='spark')
-github_token =  st.text_input('Github token', value='***')
-code_url =  st.text_input('Code URL', value='')
-data_set =  st.text_input('Data Set', value='')
-
-if st.button("POST spark submit"):
-    post_spark_job(github_user, github_repo, spark_job, github_token, code_url, data_set)
-
-
 def get_spark_results(url_results):
     response = requests.get(url_results)
     st.write(response)
 
     if  (response.status_code ==  200):
+        #response_dict = json.loads('[' + response.text + ']')
+        #st.write(response_dict)
+
+        #for i in response_dict:
+        #     print("key: ", i, "val: ", response_dict[i])
         st.write(response.json())
+        #st.write(json.dumps(response.text, indent=4, sort_keys=True, default=lambda o:'<not serializable>'))
+
+
+#else:
+
+# Main Streamlit app
+st.title("Spark & streamlit")
+
+st.header("spark-submit Job")
+
+github_user  =  st.text_input('Github user', value='adsoftsito')
+github_repo  =  st.text_input('Github repo', value='bigdata')
+spark_job    =  st.text_input('Spark job', value='spark')
+github_token =  st.text_input('Github token', value='***')
+
+if st.button("POST spark submit"):
+    post_spark_job(github_user, github_repo, spark_job, github_token)
+
 
 st.header("spark-submit results")
 
-url_results=  st.text_input('URL results', value='https://raw.githubusercontent.com/adrimexico1/spark-labs/refs/heads/main/results/data.json')
+url_results=  st.text_input('URL results', value='https://raw.githubusercontent.com/adsoftsito/bigdata/refs/heads/main/results/part-00000-b93e7f80-e363-46c1-8d4f-795a4007b140-c000.json')
 
 if st.button("GET spark results"):
     get_spark_results(url_results)
 
+
 if st.button("Query mongodb collection"):
     items = get_data()
 
+    # Print results.
     for item in items:
-        # Convertir la cadena JSON en un diccionario
-        item_data = json.loads(item["data"])
-        
-        # Mostrar en Streamlit
-        st.write(f"{item_data['name']} : {item_data['birth']}")
-
-conn = st.connection("postgresql", type="sql")
-
+        st.write(f"{item['name']} : {item['birth']}:")
 
 if st.button("Query Postgresql table"):
     # Perform query.
